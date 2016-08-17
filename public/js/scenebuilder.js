@@ -2,10 +2,7 @@ var SceneBuilder = (function namespace() {
     
 /*конструктор*/
 function Scene() {
-    /*Ширина сцены*/
-    this.width = window.innerWidth; /*сделать getter*/
-    /*Высота сцены*/
-    this.height = window.innerHeight;  /*сделать getter*/
+    
     /*Камера*/
     this.camera = null;
     /*HTML-контейнер, содержащий сцену*/
@@ -35,6 +32,10 @@ function Scene() {
 /*методы класса*/    
 Scene.prototype = {
     constructor: Scene,
+    /*Ширина сцены*/
+    get width() { return window.innerWidth - 3; }, /*сделать getter*/
+    /*Высота сцены*/
+    get height() { return window.innerHeight - 3; },  /*сделать getter*/
     init: function() {
     this.mouse = new THREE.Vector2();
     this.offset = new THREE.Vector3();
