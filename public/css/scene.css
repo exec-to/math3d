@@ -1,3 +1,11 @@
+span.glyphicon.navleft {
+    font-size: 1.6em;
+}
+
+div.navleft.empty {
+    min-height: 50px;
+}
+
 .navbar-inverse .navbar-nav > .open > a,
 .navbar-inverse .navbar-nav > .open > a:hover,
 .navbar-inverse .navbar-nav > .open > a:focus {
@@ -30,7 +38,7 @@
     height: 100%;
     border-top: 0;
     box-shadow: none;
-    min-height: 500px;
+    min-height: 560px;
     //max-width: 100px;
       padding: 0px;
     padding-left: 0px;
@@ -49,6 +57,7 @@
 	margin-left: 0;
     padding-left:0;
     padding-right:0;
+    min-height: 560px;
 }
     
 .navtop.navbar
@@ -83,7 +92,7 @@ body {
     position: absolute;
     margin: 0px;
     padding: 0px;
-    top: 0px;
+    //top: 0px;
     //left: 52px;
     //width: 800px;
     //height: 600px;
