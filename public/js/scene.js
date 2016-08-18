@@ -1,7 +1,8 @@
 var graphScene = new SceneBuilder();
 
 graphScene.init();
-addGridHelper(graphScene.scene);
+graphScene.addGridHelper(userapi.addGridHelper, graphScene.scene);
+//addGridHelper(graphScene.scene);
 graphScene.animate();
 
 window.addEventListener('resize', onWindowResize, false);
@@ -15,20 +16,4 @@ function onWindowResize() {
     
 }
 
-
-//Добавить сетку на сцену
-function addGridHelper(scene) {
-    var grid = new THREE.GridHelper(10, 1);
-    grid.position.y = -5;
-    grid.setColors(0xff4040, 0xcdb38b);
-    scene.add(grid);
-    
-    var plane = new THREE.Mesh(
-        new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
-        new THREE.MeshBasicMaterial({ visible : false})
-    );
-    scene.add(plane);
-
-    console.log("addGridHelper executed");    
-}
 

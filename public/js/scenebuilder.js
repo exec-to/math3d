@@ -76,6 +76,9 @@ Scene.prototype = {
         this.orbitControls.update();
         this.renderer.render(this.scene, this.camera);
     }, /*function render()*/
+    addGridHelper: function(callback) {
+        callback(arguments[1]);
+    }, /*function addGridHelper*/
 }    
     
     
@@ -84,4 +87,27 @@ Scene.prototype = {
 
     
 return Scene;
+}());
+
+
+var userapi = (function namespace() {
+    var functions = {};
+    
+    //Добавить сетку на сцену
+    var addGridHelper = 
+    
+    functions.addGridHelper = function(scene) {
+            var grid = new THREE.GridHelper(10, 1);
+            grid.position.y = -5;
+            grid.setColors(0xff4040, 0xcdb38b);
+            scene.add(grid);
+
+            var plane = new THREE.Mesh(
+                new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
+                new THREE.MeshBasicMaterial({ visible : false})
+            );
+            scene.add(plane);
+        }
+    
+    return functions;
 }());
