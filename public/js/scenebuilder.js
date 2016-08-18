@@ -27,6 +27,8 @@ function Scene() {
     this.INTERSECTED = null;
     /*Объект, выбранный мышью*/
     this.SELECTED = null;
+    /**/
+    this.plane = null;
 }
     
 /*методы класса*/    
@@ -51,6 +53,11 @@ Scene.prototype = {
     this.scene.add(this.light);
     this.transformControls = new THREE.TransformControls( this.camera, this.renderer.domElement );
     this.scene.add(this.transformControls);
+    this.plane = new THREE.Mesh(
+        new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
+        new THREE.MeshBasicMaterial({ visible : false})
+    );
+    this. scene.add(this.plane);
     this.raycaster = new THREE.Raycaster();             
     //this.renderer.setClearColor(0xfffff0);
     this.renderer.setClearColor(0xb0cbd0);
@@ -63,7 +70,6 @@ Scene.prototype = {
     //document.addEventListener('mousemove', onDocumentMouseMove, false);
     //this.renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
     //this.renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
-    //window.addEventListener('resize', onWindowResize, false);
     //this.transformControls.addEventListener( 'change', transformed );
     
 }, /*function init()*/
@@ -89,25 +95,19 @@ Scene.prototype = {
 return Scene;
 }());
 
-
+//пространство имён для вызова пользовательских функций
 var userapi = (function namespace() {
+    
+    /*Реализует статические методы (методы класса)*/
     var functions = {};
     
     //Добавить сетку на сцену
-    var addGridHelper = 
-    
     functions.addGridHelper = function(scene) {
-            var grid = new THREE.GridHelper(10, 1);
-            grid.position.y = -5;
-            grid.setColors(0xff4040, 0xcdb38b);
-            scene.add(grid);
-
-            var plane = new THREE.Mesh(
-                new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
-                new THREE.MeshBasicMaterial({ visible : false})
-            );
-            scene.add(plane);
-        }
+        var grid = new THREE.GridHelper(10, 1);
+        grid.position.y = -5;
+        grid.setColors(0xff4040, 0xcdb38b);
+        scene.add(grid);
+    }
     
     return functions;
 }());

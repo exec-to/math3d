@@ -2,7 +2,6 @@ var graphScene = new SceneBuilder();
 
 graphScene.init();
 graphScene.addGridHelper(userapi.addGridHelper, graphScene.scene);
-//addGridHelper(graphScene.scene);
 graphScene.animate();
 
 window.addEventListener('resize', onWindowResize, false);
