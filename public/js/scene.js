@@ -1,10 +1,14 @@
 var graphScene = new SceneBuilder();
 
 graphScene.init();
-graphScene.addGridHelper(userapi.addGridHelper, graphScene.scene);
+userapi.addGridHelper(graphScene.scene);
 graphScene.animate();
 
 window.addEventListener('resize', onWindowResize, false);
+document.addEventListener('mousemove', onDocumentMouseMove, false);
+graphScene.renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
+graphScene.renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
+graphScene.transformControls.addEventListener( 'change', onTransformed );
 
 //Установить событие на изменение размера окна
 function onWindowResize() {
@@ -15,4 +19,24 @@ function onWindowResize() {
     
 }
 
+$('#addGraphVertexButton').click(function() {
+    userapi.addGraphVertex(graphScene.scene, graphScene.objects);
+});
 
+function onDocumentMouseMove(event) {
+    userapi.onSceneMouseMove.call(graphScene, event);
+}
+
+function onDocumentMouseDown(event) {
+    userapi.onSceneMouseDown.call(graphScene, event);
+}
+
+function onDocumentMouseUp(event) {
+    userapi.onSceneMouseUp.call(graphScene, event);
+}
+
+function onTransformed() {
+    //***moveElementBounds(control.object, edit_v, lines, scene);
+    //***updateMeshHelpText(control.object);
+    graphScene.render();
+}
