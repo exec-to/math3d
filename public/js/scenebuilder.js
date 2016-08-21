@@ -1,4 +1,4 @@
-var SceneBuilder = (function namespace() {
+var SceneBuilder = (function namespace() { /*Конструктор сцены*/
     
 /*конструктор*/
 function Scene() {
@@ -30,7 +30,9 @@ function Scene() {
     this.plane = null;
     /*Объекты сцены, взаимодействующие с мышью*/
     this.objects = [];
-    /*Управление перемещением объектов*/
+    /*Выделенные вершины*/
+    this.selectedVertex = [];
+    /*Перемещаемый в данный момент объект*/
     this.transformer = null;
 }
     
@@ -83,12 +85,17 @@ Scene.prototype = {
         this.transformControls.update();
         this.orbitControls.update();
         this.renderer.render(this.scene, this.camera);
-    }, /*function render()*/
+    }/*function render()*/
 }    
     
     
 /*внутренние функции*/    
-/* ... */    
+/* ... */  
+Array.prototype.unSelect = Array.prototype.unSelect || function(callback) {
+    while (this.length) {
+        callback(this.pop());
+    }
+};
 
     
 return Scene;
@@ -98,7 +105,20 @@ return Scene;
 var userapi = (function namespace() {
     
     /*Реализует статические методы (методы класса)*/
-    var functions = {};
+    var functions = {},
+    /*объект клавиш клавиатуры*/
+        keys = { /*keycodes https://learn.javascript.ru/keyboard-events*/
+            ctrlState: false,
+            shiftState : false,
+            altState : false            
+        };
+    
+    //Обработчик нажатия клавиш клавиатуры
+    functions.onSceneKeysHandle = function(e) {
+        /*ctrl is pressed*/
+        keys.ctrlState = e.ctrlKey;
+        //console.log('ctrl is pressed: ' + keys.ctrlState);
+    };/*onSceneKeyDown*/
     
     //Добавить сетку на сцену
     functions.addGridHelper = function(scene) {
@@ -106,7 +126,7 @@ var userapi = (function namespace() {
         grid.position.y = -5;
         grid.setColors(0xff4040, 0xcdb38b);
         scene.add(grid);
-    }/*addGridHelper*/
+    };/*addGridHelper*/
     
     //Новая вершина графа
     functions.addGraphVertex = function(scene, objects) {
@@ -120,7 +140,7 @@ var userapi = (function namespace() {
         object.name = description;
         scene.add(object);
         objects.push(object);
-    }/*addGraphVertex*/
+    };/*addGraphVertex*/
     
     //*** Нужные инструкции
     functions.onSceneMouseMove = function(event) {
@@ -157,7 +177,7 @@ var userapi = (function namespace() {
             if (this.INTERSECTED) this.INTERSECTED.material.emissive.setHex(this.INTERSECTED.currentHex);
             this.INTERSECTED = null;
         }
-    }/*onSceneMouseMove*/
+    };/*onSceneMouseMove*/
     
     //var controller;
     functions.onSceneMouseDown = function(event) {
@@ -171,6 +191,24 @@ var userapi = (function namespace() {
             this.SELECTED = intersects[0].object;
             this.transformer = this.SELECTED;
             this.transformControls.attach( this.transformer );
+            //console.log(this.transformer);
+            /*Визуально выделяем объекты*/
+            if (keys.ctrlState) {
+                this.selectedVertex.push(this.transformer);
+                this.transformer.material.color.setHex(0xcdb38b);
+                //colorize
+            }
+            else {
+                //uncolorize
+                this.selectedVertex.unSelect(function (vertex) {
+                    vertex.material.color.setHex(0x32cd32);
+                });
+                this.selectedVertex.push(this.transformer);
+                this.transformer.material.color.setHex(0xcdb38b);
+                //colorize
+                
+            }
+            
             //***var all_lines = updateLinesList();
             //получаем зависимые линии для элемента mesh
             //***var getLinesObjects = getLines(this.transformer, all_lines);
@@ -183,7 +221,7 @@ var userapi = (function namespace() {
                 this.offset.copy(intersects[0].point).sub(this.plane.position);
             }
         }
-    }
+    };/*onSceneMouseDown*/
     
     functions.onSceneMouseUp = function(event) {
         //control.onPointerUp(event);
@@ -193,7 +231,7 @@ var userapi = (function namespace() {
             this.plane.position.copy(this.INTERSECTED.position);
             this.SELECTED = null;
         }
-    }
+    };/*onSceneMouseUp*/
     
     return functions;
 }());
