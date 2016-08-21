@@ -25,6 +25,10 @@
     $('#addGraphVertexButton').click(function() {
         userapi.addGraphVertex(graphScene.scene, graphScene.objects);
     });
+    
+    $('#linkGraphVertexButton').click(function() {
+        userapi.linkGraphVertex(graphScene.scene, graphScene.selectedVertex);
+    });
 
     function onDocumentMouseMove(event) {
         userapi.onSceneMouseMove.call(graphScene, event);
@@ -42,6 +46,7 @@
     function onTransformed() {
         //***moveElementBounds(control.object, edit_v, lines, scene);
         //***updateMeshHelpText(control.object);
+        userapi.onVertexTransform(graphScene.transformControls.object);
         graphScene.render();
     }
 }());

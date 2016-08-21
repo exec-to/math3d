@@ -129,7 +129,7 @@ var userapi = (function namespace() {
     };/*addGridHelper*/
     
     //Новая вершина графа
-    functions.addGraphVertex = function(scene, objects) {
+    functions.addGraphVertex = function (scene, objects) {
         /*TODO: implement counter*/
         description = "V" + "counter"; 
         var geometry = new THREE.SphereGeometry(0.5, 16, 16);
@@ -138,12 +138,63 @@ var userapi = (function namespace() {
         object.position.y = Math.random() * 10 - 5;
         object.position.z = Math.random() * 10 - 5;
         object.name = description;
+        object.links = []; /*DefineProperty? Рёбра, связанные с вершиной*/
+        object.linkedWith = []; /*DefineProperty? Вершины, связанные с текущей*/
+        object.moveFrom = {
+            x: object.position.x,
+            y: object.position.y,
+            z: object.position.z
+        };
         scene.add(object);
         objects.push(object);
     };/*addGraphVertex*/
     
+    functions.linkGraphVertex = function (scene, selected) {
+        //console.log(selected);
+        var geometry,
+            material,
+            selectedCount = selected.length,
+            link;
+        
+        if (selectedCount == 2) {
+            selected[0].linkedWith = selected[0].linkedWith || [];
+            selected[0].links = selected[0].links || [];
+            selected[1].linkedWith = selected[1].linkedWith || [];
+            selected[1].links = selected[1].links || [];
+            
+            /*Проверка наличия установленных связей*/
+            if((selected[0].linkedWith.indexOf(selected[1]) != -1) &&
+               (selected[1].linkedWith.indexOf(selected[0]) != -1)) {
+                return;
+            }
+                
+            geometry = new THREE.Geometry();
+            material = new THREE.LineBasicMaterial({
+					   color: 0x0000ff, linewidth: 5
+					 });
+            //Вершина 1
+            geometry.vertices.push(new THREE.Vector3(
+                selected[0].position.x,
+                selected[0].position.y,
+                selected[0].position.z ));
+            //ссылка на слинкованную вершину
+            selected[0].linkedWith.push(selected[1]);
+            //Вершина 2
+            geometry.vertices.push(new THREE.Vector3(
+                selected[1].position.x,
+                selected[1].position.y,
+                selected[1].position.z ));
+            selected[1].linkedWith.push(selected[0]);
+            link = new THREE.Line( geometry, material );
+            //link.name = "line"+scene.children.length;
+            scene.add( link );
+            selected[0].links.push(link);
+            selected[1].links.push(link);
+        }
+    };
+    
     //*** Нужные инструкции
-    functions.onSceneMouseMove = function(event) {
+    functions.onSceneMouseMove = function (event) {
         event.preventDefault();
         this.mouse.x = ((event.clientX - this.renderer.domElement.offsetLeft) / this.renderer.domElement.width) * 2 - 1;
         this.mouse.y = -((event.clientY - this.renderer.domElement.offsetTop) / this.renderer.domElement.height) * 2 + 1;
@@ -194,9 +245,11 @@ var userapi = (function namespace() {
             //console.log(this.transformer);
             /*Визуально выделяем объекты*/
             if (keys.ctrlState) {
-                this.selectedVertex.push(this.transformer);
-                this.transformer.material.color.setHex(0xcdb38b);
-                //colorize
+                if (this.selectedVertex.indexOf(this.transformer) == -1) {
+                    this.selectedVertex.push(this.transformer);
+                    this.transformer.material.color.setHex(0xcdb38b);
+                }
+                //console.log(this.selectedVertex);
             }
             else {
                 //uncolorize
@@ -221,9 +274,9 @@ var userapi = (function namespace() {
                 this.offset.copy(intersects[0].point).sub(this.plane.position);
             }
         }
-    };/*onSceneMouseDown*/
+    };/*function onSceneMouseDown*/
     
-    functions.onSceneMouseUp = function(event) {
+    functions.onSceneMouseUp = function (event) {
         //control.onPointerUp(event);
         event.preventDefault();
         this.orbitControls.enabled = true;
@@ -232,6 +285,45 @@ var userapi = (function namespace() {
             this.SELECTED = null;
         }
     };/*onSceneMouseUp*/
+    
+    functions.onVertexTransform = function (graphVertex) {
+        var linkeds = graphVertex.links.length || 0,
+            index, //ребро
+            v, //массив ребёр
+            i; //индекс точки ребра
+        
+        if (linkeds == 0) {
+            return;
+        }
+        
+        for (index = 0; index < linkeds; index += 1) {
+
+            v = graphVertex.links[index].geometry.vertices;
+            for (i = 0; i <= 1; i += 1) {
+                if ((v[i].x === graphVertex.position.x) &&
+                    (v[i].y === graphVertex.position.y) &&
+                    (v[i].z === graphVertex.position.z)) {
+                        console.log("i = ", i);
+                        console.log(v[i]);
+                        console.log(graphVertex.position);
+                        break;
+                }
+            }
+            console.log("break: i = ", i);
+            
+            graphVertex.links[index].geometry.vertices[i].setX(graphVertex.position.x);
+            graphVertex.links[index].geometry.vertices[i].setY(graphVertex.position.y);
+            graphVertex.links[index].geometry.vertices[i].setZ(graphVertex.position.z);
+            graphVertex.links[index].geometry.__dirtyVertices = true;
+            graphVertex.links[index].geometry.verticesNeedUpdate = true;
+            graphVertex.links[index].geometry.attributes.position.needsUpdate = true;
+            graphVertex.moveFrom = {
+                x: graphVertex.position.x,
+                y: graphVertex.position.y,
+                z: graphVertex.position.z
+            };
+        }
+    };/*function onVertexTransform*/
     
     return functions;
 }());
