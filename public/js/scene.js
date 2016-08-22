@@ -27,7 +27,7 @@
     });
     
     $('#linkGraphVertexButton').click(function() {
-        userapi.linkGraphVertex(graphScene.scene, graphScene.selectedVertex);
+        userapi.addLinkGraphVertex(graphScene.scene, graphScene.selectedVertex);
     });
 
     function onDocumentMouseMove(event) {

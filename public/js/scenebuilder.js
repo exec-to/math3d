@@ -140,16 +140,11 @@ var userapi = (function namespace() {
         object.name = description;
         object.links = []; /*DefineProperty? Рёбра, связанные с вершиной*/
         object.linkedWith = []; /*DefineProperty? Вершины, связанные с текущей*/
-        object.moveFrom = {
-            x: object.position.x,
-            y: object.position.y,
-            z: object.position.z
-        };
         scene.add(object);
         objects.push(object);
     };/*addGraphVertex*/
     
-    functions.linkGraphVertex = function (scene, selected) {
+    functions.addLinkGraphVertex = function (scene, selected) {
         //console.log(selected);
         var geometry,
             material,
@@ -186,6 +181,8 @@ var userapi = (function namespace() {
                 selected[1].position.z ));
             selected[1].linkedWith.push(selected[0]);
             link = new THREE.Line( geometry, material );
+            link.v0 = selected[0];
+            link.v1 = selected[1];
             //link.name = "line"+scene.children.length;
             scene.add( link );
             selected[0].links.push(link);
@@ -202,13 +199,9 @@ var userapi = (function namespace() {
         if (this.SELECTED) {
             var intersects = this.raycaster.intersectObject(this.plane);
             if (intersects.length > 0) {
-                //***var all_lines = updateLinesList();
-                //****var getLinesObjects = getLines(SELECTED, all_lines); //получаем зависимые линии для элемента mesh
-                //***edit_v = getLinesObjects[0];
-                //***lines = getLinesObjects[1];
-                //console.log(lines.length);
                 this.SELECTED.position.copy(intersects[0].point.sub(this.offset));
                 //переносим связанные линии
+                functions.onVertexTransform(this.SELECTED);
                 //***moveElementBounds(SELECTED, edit_v, lines, scene);
                 //***updateMeshHelpText(SELECTED);
             }
@@ -297,32 +290,15 @@ var userapi = (function namespace() {
         }
         
         for (index = 0; index < linkeds; index += 1) {
-
-            v = graphVertex.links[index].geometry.vertices;
-            for (i = 0; i <= 1; i += 1) {
-                if ((v[i].x === graphVertex.position.x) &&
-                    (v[i].y === graphVertex.position.y) &&
-                    (v[i].z === graphVertex.position.z)) {
-                        console.log("i = ", i);
-                        console.log(v[i]);
-                        console.log(graphVertex.position);
-                        break;
-                }
-            }
-            console.log("break: i = ", i);
-            
-            graphVertex.links[index].geometry.vertices[i].setX(graphVertex.position.x);
-            graphVertex.links[index].geometry.vertices[i].setY(graphVertex.position.y);
-            graphVertex.links[index].geometry.vertices[i].setZ(graphVertex.position.z);
-            graphVertex.links[index].geometry.__dirtyVertices = true;
+            v = (graphVertex.links[index].v0 == graphVertex) ? 0 : 1;  
+            graphVertex.links[index].geometry.vertices[v].setX(graphVertex.position.x);
+            graphVertex.links[index].geometry.vertices[v].setY(graphVertex.position.y);
+            graphVertex.links[index].geometry.vertices[v].setZ(graphVertex.position.z);
+            //graphVertex.links[index].geometry.__dirtyVertices = true;
             graphVertex.links[index].geometry.verticesNeedUpdate = true;
-            graphVertex.links[index].geometry.attributes.position.needsUpdate = true;
-            graphVertex.moveFrom = {
-                x: graphVertex.position.x,
-                y: graphVertex.position.y,
-                z: graphVertex.position.z
-            };
+            //graphVertex.links[index].geometry.attributes.position.needsUpdate = true;
         }
+            
     };/*function onVertexTransform*/
     
     return functions;
