@@ -140,6 +140,7 @@ var userapi = (function namespace() {
         object.name = description;
         object.links = []; /*DefineProperty? Рёбра, связанные с вершиной*/
         object.linkedWith = []; /*DefineProperty? Вершины, связанные с текущей*/
+        object.isSelected = false;
         scene.add(object);
         objects.push(object);
     };/*addGraphVertex*/
@@ -151,7 +152,13 @@ var userapi = (function namespace() {
             selectedCount = selected.length,
             link;
         
-        if (selectedCount == 2) {
+        if (selectedCount == 0) {
+            
+        }
+        else if (selectedCount == 1) {
+            
+        }
+        else if (selectedCount == 2) {
             selected[0].linkedWith = selected[0].linkedWith || [];
             selected[0].links = selected[0].links || [];
             selected[1].linkedWith = selected[1].linkedWith || [];
@@ -188,6 +195,11 @@ var userapi = (function namespace() {
             selected[0].links.push(link);
             selected[1].links.push(link);
         }
+        else if (selectedCount > 2) {
+            functions.addLinkGraphVertex(scene, selected.slice(0,2)); //without: star reverse
+            functions.addLinkGraphVertex(scene, selected.slice(0,1).concat(selected.slice(2))); //without: chain
+            functions.addLinkGraphVertex(scene, selected.slice(1)); //without: star
+        }
     };
     
     //*** Нужные инструкции
@@ -202,7 +214,6 @@ var userapi = (function namespace() {
                 this.SELECTED.position.copy(intersects[0].point.sub(this.offset));
                 //переносим связанные линии
                 functions.onVertexTransform(this.SELECTED);
-                //***moveElementBounds(SELECTED, edit_v, lines, scene);
                 //***updateMeshHelpText(SELECTED);
             }
             return;
@@ -240,7 +251,8 @@ var userapi = (function namespace() {
             if (keys.ctrlState) {
                 if (this.selectedVertex.indexOf(this.transformer) == -1) {
                     this.selectedVertex.push(this.transformer);
-                    this.transformer.material.color.setHex(0xcdb38b);
+                    this.transformer.isSelected = true;
+                    this.transformer.material.color.setHex(0xfff400);
                 }
                 //console.log(this.selectedVertex);
             }
@@ -248,20 +260,15 @@ var userapi = (function namespace() {
                 //uncolorize
                 this.selectedVertex.unSelect(function (vertex) {
                     vertex.material.color.setHex(0x32cd32);
+                    vertex.isSelected = false;
                 });
                 this.selectedVertex.push(this.transformer);
-                this.transformer.material.color.setHex(0xcdb38b);
+                this.transformer.isSelected = true;
+                this.transformer.material.color.setHex(0xfff400);
                 //colorize
                 
             }
             
-            //***var all_lines = updateLinesList();
-            //получаем зависимые линии для элемента mesh
-            //***var getLinesObjects = getLines(this.transformer, all_lines);
-            //***edit_v = getLinesObjects[0];
-            //***lines = getLinesObjects[1];
-
-            //control.enabled = true;
             var intersects = this.raycaster.intersectObject(this.plane);
             if (intersects.length > 0) {
                 this.offset.copy(intersects[0].point).sub(this.plane.position);
@@ -281,24 +288,23 @@ var userapi = (function namespace() {
     
     functions.onVertexTransform = function (graphVertex) {
         var linkeds = graphVertex.links.length || 0,
-            index, //ребро
-            v, //массив ребёр
-            i; //индекс точки ребра
+            index, //текущее ребро
+            v, //индекс точки для текущей вершины
+            pos,
+            geo;
         
         if (linkeds == 0) {
             return;
         }
         
+        pos = new THREE.Vector3(graphVertex.position.x, graphVertex.position.y, graphVertex.position.z);
+        
         for (index = 0; index < linkeds; index += 1) {
-            v = (graphVertex.links[index].v0 == graphVertex) ? 0 : 1;  
-            graphVertex.links[index].geometry.vertices[v].setX(graphVertex.position.x);
-            graphVertex.links[index].geometry.vertices[v].setY(graphVertex.position.y);
-            graphVertex.links[index].geometry.vertices[v].setZ(graphVertex.position.z);
-            //graphVertex.links[index].geometry.__dirtyVertices = true;
-            graphVertex.links[index].geometry.verticesNeedUpdate = true;
-            //graphVertex.links[index].geometry.attributes.position.needsUpdate = true;
+            v = (graphVertex.links[index].v0 == graphVertex) ? 0 : 1;
+            geo = graphVertex.links[index].geometry;
+            geo.vertices[v] = pos;
+            geo.verticesNeedUpdate = true;
         }
-            
     };/*function onVertexTransform*/
     
     return functions;
